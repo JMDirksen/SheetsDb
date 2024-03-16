@@ -9,6 +9,7 @@ class SheetsDb {
    * @param {array} fields Field names
    */
   createTable(name, fields) {
+    fields = stringToArray(fields)
     if (fields.includes("rowId")) throw "Field name 'rowId' is reserved and cannot be used"
     var sheet = this.ss.insertSheet(name)
     sheet.getRange(1, 1, 1, fields.length).setValues([fields])
@@ -55,8 +56,7 @@ class SheetsDb {
    * @param {boolean} ascending Sort ascending or descending
    * @return {Array} Rows
    */
-  select(table, fields = null, filterFunction = null, sortBy = null, ascending = true) {
-    let sheet = this.ss.getSheetByName(table)
+  select(table, fields = [], filterFunction = r => true, sortBy = "", ascending = true) {
     let [dataFields, rows] = this.getTableData(table)
 
     // Filter
@@ -77,7 +77,7 @@ class SheetsDb {
     }
 
     // Select fields
-    if (typeof fields === "string" && fields.length > 0) { fields = fields.split(",").map(e => e.trim()) }
+    fields = stringToArray(fields)
     if (isArray(fields) && fields.length > 0) {
       var outputRows = []
       rows.forEach(row => {
@@ -100,7 +100,6 @@ class SheetsDb {
    * @param {array} rows Array of row objects
    */
   insert(table, rows) {
-    let sheet = this.ss.getSheetByName(table)
     let tableRows = this.getTableData(table)[1]
     let count = tableRows.length
     tableRows = tableRows.concat(rows)
@@ -112,7 +111,7 @@ class SheetsDb {
    * @param {string} table Table name
    * @param {function} filterFunction Function for selecting records to delete
    */
-  delete(table, filterFunction) {
+  delete(table, filterFunction = r => true) {
     let sheet = this.ss.getSheetByName(table)
     let rows = this.getTableData(table)[1]
     let count = rows.length
@@ -179,4 +178,11 @@ class SheetsDb {
 
 function isArray(a) {
   return a !== null && a.constructor === Array
+}
+
+function stringToArray(string) {
+  if (typeof string === "string") {
+    return string.split(",").map(e => e.trim()).filter(e => e.length > 0)
+  }
+  return string
 }
