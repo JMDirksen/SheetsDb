@@ -10,7 +10,6 @@ class SheetsDb {
    */
   createTable(name, fields) {
     fields = stringToArray(fields)
-    if (fields.includes("rowId")) throw "Field name 'rowId' is reserved and cannot be used"
     var sheet = this.ss.insertSheet(name)
     sheet.getRange(1, 1, 1, fields.length).setValues([fields])
     console.log(`Created table '${name}' with ${fields.length} fields`)
